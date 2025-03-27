@@ -1,7 +1,7 @@
 import socket
 
 host = input("Please enter the host IP address: ")
-port= input("Please enter port number: ")
+port= int(input("Please enter port number: "))
 
 def send_command(command):
 
@@ -13,16 +13,17 @@ def send_command(command):
             s.connect((host, port))
             print(f"Connected to {host}:{port}")
 
-            s.sendall(command.encode())
+            s.sendall(command.encode()) #converts to bytes
             print(f"Sent {command}")
-            response = s.recv(1024).decode()
+            response = s.recv(1024).decode() #receives the data
             print(f"Response from Server: {response}")
 
-        except Exception as e:
-            print(f"Unexpected error: {e}")
-
+       
         except ConnectionRefusedError:
             print("Error occurred: Server not running or connection refused")
+
+        except Exception as e:
+            print(f"Unexpected error: {e}")  #general error
 
 def main():
     print("Buzzer Activation System")
@@ -30,7 +31,7 @@ def main():
 
     while True:
 
-        cmd = input("> ").strip().upper()
+        cmd = input("-> ").strip().upper()
 
         if cmd == "EXIT":
             print("Exiting..")
