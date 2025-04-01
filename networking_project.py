@@ -1,45 +1,48 @@
-import socket
+import socket 
 
-host = input("Please enter the host IP address: ")
-port= int(input("Please enter port number: "))
+host = "255.255.255.255"
+port = 5005
 
-def send_command(command):
+s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) #creating the UDP socket
+s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+s.settimeout(0.1)
+s.bind(('',port)) #binds to listen on specified port 
 
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-
-        try:
-            s.settimeout(5.0)
-
-            s.connect((host, port))
-            print(f"Connected to {host}:{port}")
-
-            s.sendall(command.encode()) #converts to bytes
-            print(f"Sent {command}")
-            response = s.recv(1024).decode() #receives the data
-            print(f"Response from Server: {response}")
-
-       
-        except ConnectionRefusedError:
-            print("Error occurred: Server not running or connection refused")
-
-        except Exception as e:
-            print(f"Unexpected error: {e}")  #general error
 
 def main():
-    print("Buzzer Activation System")
-    print("Choose: ACTIVATE, DEACTIVATE, EXIT\n")
 
-    while True:
+   
+    print("Buzzer Activation System\n" +  "Choose: EMERGENCY, EXIT")
 
-        cmd = input("-> ").strip().upper()
+    
+    try:
+        while True:
+            try:
+                data,addr = s.recvfrom(1024) #receiving  the incoming UDP messages
+                print(f"Emergency received from {addr} : {data.decode()} ")
+            except socket.timeout:
+                pass #this ignores timeout errors
 
-        if cmd == "EXIT":
-            print("Exiting..")
-            break
-        elif cmd in ("ACTIVATE", "DEACTIVATE"):
-            send_command(cmd)
-        else:
-            print("Invalid command. Try using 'ACTIVATE', 'DEACTIVATE', or 'EXIT' ")
+            cmd = input("-> ").strip().upper()
+
+            if cmd == "EMERGENCY":
+                s.sendto(cmd.encode(), (host, port))
+                print(f"sent {cmd} alert")
+            elif cmd == "EXIT":
+                print("Exiting...")
+                break
+            else:
+                print("Invalid. Try 'EMERGENCY' or 'EXIT'")
+
+    except KeyboardInterrupt:
+        print("Exiting due to user interruption..")
+            
+    s.close() #closing the socket
+
 
 if __name__ == "__main__":
     main()
+
+
+
+    
